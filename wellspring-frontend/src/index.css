@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* One source of truth for the whole app. Every HTML mockup this was ported
+   from duplicated this block per file — this is the fix. */
+:root[data-theme='dark'] {
+  --bg: #0a0e14;
+  --surface: #111820;
+  --surface-active: #16202a;
+  --bubble: #161e27;
+  --divider: rgba(237, 234, 226, 0.1);
+  --line-teal: #4fd1b5;
+  --glow-amber: #f2b872;
+  --mist: #8a96a3;
+  --paper: #edeae2;
+  --panel-border: rgba(237, 234, 226, 0.16);
+  --panel-border-hover: rgba(237, 234, 226, 0.5);
+  --chip-bg: rgba(237, 234, 226, 0.06);
+}
+:root[data-theme='light'] {
+  /* Warmer, softer neutrals than the original cool grey-green — reads
+     calmer and less clinical, closer to warm paper than a UI mockup. */
+  --bg: #f7f5f1;
+  --surface: #ffffff;
+  --surface-active: #f0ede6;
+  --bubble: #f6f4ef;
+  --divider: rgba(35, 32, 28, 0.08);
+  /* Slightly desaturated / deepened so accents read as intentional and
+     professional rather than bright-and-loud on a light background. */
+  --line-teal: #2f7d6c;
+  --glow-amber: #a8703a;
+  --mist: #6b6a62;
+  --paper: #241f1a;
+  --panel-border: rgba(35, 32, 28, 0.12);
+  --panel-border-hover: rgba(35, 32, 28, 0.32);
+  --chip-bg: rgba(35, 32, 28, 0.045);
+}
+
+html, body, #root {
+  height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--paper);
+  transition: background 0.4s ease, color 0.4s ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.005em;
+}
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--glow-amber);
+  outline-offset: 3px;
+}
+::selection {
+  background: var(--glow-amber);
+  color: var(--bg);
+}
