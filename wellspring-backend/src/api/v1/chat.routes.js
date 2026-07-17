@@ -138,9 +138,7 @@ router.post('/sessions/:id/message', requireAuth, asyncHandler(async (req, res) 
 
 `);
     });
-    res.write('data: [DONE]
-
-');
+  res.write("data: [DONE]\n\n");
     res.end();
   } catch (err) {
     console.error('[chat.routes] reflection agent failed —', err.message);
