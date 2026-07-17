@@ -45,7 +45,7 @@ async function callGrok({ system, messages, stream, onChunk }) {
   const chatMessages = [{ role: 'system', content: system }, ...messages];
   if (!stream) {
     const res = await grok.chat.completions.create({ model: 'grok-4.3', messages: chatMessages });
-    return res.choices[0].message.content;
+    return res.choices[0]?.message?.content || '';
   }
   const s = await grok.chat.completions.create({ model: 'grok-4.3', messages: chatMessages, stream: true });
   let full = '';
@@ -80,7 +80,7 @@ async function callOpenAI({ system, messages, stream, onChunk }) {
   const chatMessages = [{ role: 'system', content: system }, ...messages];
   if (!stream) {
     const res = await openai.chat.completions.create({ model: 'gpt-4.1', messages: chatMessages });
-    return res.choices[0].message.content;
+    return res.choices[0]?.message?.content || '';
   }
   const s = await openai.chat.completions.create({ model: 'gpt-4.1', messages: chatMessages, stream: true });
   let full = '';
@@ -106,16 +106,22 @@ const PROVIDERS = [
 ];
 
 async function generate({ system, messages, stream = false, onChunk }) {
-  let lastError;
+  const errors = [];
+  
   for (const provider of PROVIDERS) {
     try {
       return await provider.call({ system, messages, stream, onChunk });
     } catch (err) {
-      lastError = err;
-      console.error(`[llmProvider] ${provider.name} failed, trying next — ${err.message}`);
+      const errorMsg = err?.message || String(err);
+      errors.push(`${provider.name}: ${errorMsg}`);
+      console.error(`[llmProvider] ${provider.name} failed, trying next — ${errorMsg}`);
     }
   }
-  throw new Error(`All LLM providers failed: ${lastError?.message}`);
+  
+  // All providers failed - provide detailed error message
+  const errorDetails = errors.join(' | ');
+  const failureMessage = `All LLM providers failed. Attempted: ${errorDetails}`;
+  throw new Error(failureMessage);
 }
 
 module.exports = { generate };
