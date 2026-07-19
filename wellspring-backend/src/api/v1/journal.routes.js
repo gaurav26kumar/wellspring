@@ -1,12 +1,11 @@
 const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
-const { asyncHandler } = require('../../middleware/asyncHandler');
 const JournalEntry = require('../../models/JournalEntry');
 const { queueEmbedding } = require('../../workers/taskEmbeddings');
 
 const router = express.Router();
 
-router.post('/', requireAuth, asyncHandler(async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const { content, moodScore } = req.body;
   if (!content || !content.trim()) return res.status(400).json({ error: 'content is required' });
   if (moodScore !== undefined && (moodScore < 1 || moodScore > 5)) {
@@ -20,10 +19,12 @@ router.post('/', requireAuth, asyncHandler(async (req, res) => {
   // sent so saving never waits on it.
   queueEmbedding('JournalEntry', entry._id);
 
-  res.status(201).json(entry);}));
+  res.status(201).json(entry);
+});
 
-router.get('/', requireAuth, asyncHandler(async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   const entries = await JournalEntry.find({ userId: req.user.id }).sort({ createdAt: -1 });
-  res.json(entries);}));
+  res.json(entries);
+});
 
 module.exports = router;

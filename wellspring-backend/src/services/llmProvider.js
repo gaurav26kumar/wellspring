@@ -1,53 +1,31 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const OpenAI = require('openai');
 const Anthropic = require('@anthropic-ai/sdk');
 
-const gemini = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
-// xAI's API is OpenAI-SDK-compatible — same client, just a different base URL.
-const grok = process.env.XAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.XAI_API_KEY, baseURL: 'https://api.x.ai/v1' })
+/**
+ * Groq's API is OpenAI-SDK-compatible — same client, different base URL.
+ * Groq has been retiring chat models fast this year: llama-3.3-70b-versatile
+ * and llama-3.1-8b-instant (the models in most tutorials) were both
+ * deprecated June 17, 2026. openai/gpt-oss-20b below is their current
+ * recommended replacement. If this 404s later too, check what's actually
+ * live for your key with:
+ *   curl https://api.groq.com/openai/v1/models -H "Authorization: Bearer YOUR_KEY"
+ * and set GROQ_CHAT_MODEL in .env rather than editing this file again.
+ */
+const GROQ_CHAT_MODEL = process.env.GROQ_CHAT_MODEL || 'openai/gpt-oss-20b';
+const groq = process.env.GROQ_API_KEY
+  ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1' })
   : null;
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) : null;
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
-async function callGemini({ system, messages, stream, onChunk }) {
-  if (!gemini) throw new Error('GEMINI_API_KEY not configured');
-  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash', systemInstruction: system });
-
-  // Gemini wants alternating user/model turns in `history`, with the most
-  // recent message sent separately via sendMessage — no combined array
-  // like Anthropic/OpenAI take.
-  const history = messages.slice(0, -1).map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
-  }));
-  const last = messages[messages.length - 1];
-  const chat = model.startChat({ history });
-
-  if (!stream) {
-    const res = await chat.sendMessage(last.content);
-    return res.response.text();
-  }
-  const res = await chat.sendMessageStream(last.content);
-  let full = '';
-  for await (const chunk of res.stream) {
-    const text = chunk.text();
-    if (text) {
-      full += text;
-      onChunk && onChunk(text);
-    }
-  }
-  return full;
-}
-
-async function callGrok({ system, messages, stream, onChunk }) {
-  if (!grok) throw new Error('XAI_API_KEY not configured');
+async function callGroq({ system, messages, stream, onChunk }) {
+  if (!groq) throw new Error('GROQ_API_KEY not configured');
   const chatMessages = [{ role: 'system', content: system }, ...messages];
   if (!stream) {
-    const res = await grok.chat.completions.create({ model: 'grok-4.3', messages: chatMessages });
-    return res.choices[0]?.message?.content || '';
+    const res = await groq.chat.completions.create({ model: GROQ_CHAT_MODEL, messages: chatMessages });
+    return res.choices[0].message.content;
   }
-  const s = await grok.chat.completions.create({ model: 'grok-4.3', messages: chatMessages, stream: true });
+  const s = await groq.chat.completions.create({ model: GROQ_CHAT_MODEL, messages: chatMessages, stream: true });
   let full = '';
   for await (const part of s) {
     const chunk = part.choices[0]?.delta?.content || '';
@@ -80,7 +58,7 @@ async function callOpenAI({ system, messages, stream, onChunk }) {
   const chatMessages = [{ role: 'system', content: system }, ...messages];
   if (!stream) {
     const res = await openai.chat.completions.create({ model: 'gpt-4.1', messages: chatMessages });
-    return res.choices[0]?.message?.content || '';
+    return res.choices[0].message.content;
   }
   const s = await openai.chat.completions.create({ model: 'gpt-4.1', messages: chatMessages, stream: true });
   let full = '';
@@ -96,32 +74,24 @@ async function callOpenAI({ system, messages, stream, onChunk }) {
 
 // Tried in this order. Only providers with a key set in .env actually get
 // attempted — each call*() throws immediately if its key is missing, and
-// the loop below just moves on, so it's fine to leave all four wired up
-// and only fill in the ones you're actually using.
+// the loop below just moves to the next one.
 const PROVIDERS = [
-  { name: 'gemini', call: callGemini },
-  { name: 'grok', call: callGrok },
+  { name: 'groq', call: callGroq },
   { name: 'anthropic', call: callAnthropic },
   { name: 'openai', call: callOpenAI },
 ];
 
 async function generate({ system, messages, stream = false, onChunk }) {
-  const errors = [];
-  
+  let lastError;
   for (const provider of PROVIDERS) {
     try {
       return await provider.call({ system, messages, stream, onChunk });
     } catch (err) {
-      const errorMsg = err?.message || String(err);
-      errors.push(`${provider.name}: ${errorMsg}`);
-      console.error(`[llmProvider] ${provider.name} failed, trying next — ${errorMsg}`);
+      lastError = err;
+      console.error(`[llmProvider] ${provider.name} failed, trying next — ${err.message}`);
     }
   }
-  
-  // All providers failed - provide detailed error message
-  const errorDetails = errors.join(' | ');
-  const failureMessage = `All LLM providers failed. Attempted: ${errorDetails}`;
-  throw new Error(failureMessage);
+  throw new Error(`All LLM providers failed: ${lastError?.message}`);
 }
 
 module.exports = { generate };

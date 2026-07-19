@@ -1,221 +1,26 @@
-# Environment variables
+# Dependencies
+node_modules/
+
+# Environment variables — never commit real secrets/keys
 .env
 .env.local
 .env.*.local
-.env.example.local
-
-# Dependencies
-node_modules/
-yarn.lock
-package-lock.json
-pnpm-lock.yaml
-
-# Backend
-wellspring-backend/node_modules/
-wellspring-backend/dist/
-wellspring-backend/.env
-wellspring-backend/.env.local
-wellspring-backend/logs/
-wellspring-backend/*.log
-wellspring-backend/npm-debug.log*
-wellspring-backend/yarn-debug.log*
-wellspring-backend/yarn-error.log*
-
-# Frontend
-wellspring-frontend/node_modules/
-wellspring-frontend/dist/
-wellspring-frontend/build/
-wellspring-frontend/.env
-wellspring-frontend/.env.local
-wellspring-frontend/.env.*.local
-wellspring-frontend/.vite/
-
-# IDE & Editor
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-*.sublime-project
-*.sublime-workspace
-.history/
-.vim/
-.emacs.d/
-*.iml
-
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-
-# Testing
-coverage/
-.nyc_output/
-*.lcov
-
-# Build outputs
-dist/
-build/
-out/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.bak
-*.swp
-*.swo
-
-# Development
-.env.test
-.env.development
-.env.production
 
 # Logs
-logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 *.log
-lerna-debug.log*
 
-# Debugging
-.debug/
-.vscode/launch.json
-.vscode/settings.json
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional REPL history
-.node_repl_history
-
-# MongoDB
-local.mongodb/
-data/
-db/
-
-# API Keys and Secrets (explicit protection)
-*.key
-*.pem
-*.pub
-.ssh/
-secrets/
-credentials.json
-service-account-key.json
-
-# MacOS
+# OS files
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
-*.exe
-*.bat
-*.cmd
 Thumbs.db
 
-# Linux
-.directory
-
-# Jetbrains IDEs
-.idea/
-*.iml
-*.iws
-*.ipr
-out/
-
-# Sublime Text
-.sublime-project
-.sublime-workspace
-
-# Atom
-.atom/
-
-# VS Code
+# Editor
 .vscode/
-launch.json
-settings.json
-extensions.json
+.idea/
+*.swp
 
-# Package manager
-.pnp
-.pnp.js
-
-# Production
-wellspring-frontend/dist/
-wellspring-backend/build/
-
-# Misc
-.cache/
-.parcel-cache
-.next
-out
-.nuxt
-dist
-*.egg-info/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Platform-specific
-.vagrant/
-.venv/
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Docker
-.dockerignore
-docker-compose.override.yml
-
-# Kubernetes
-*.yaml.local
-kustomization.yaml.local
-
-# Project-specific sensitive files
-.env.production.local
-.env.staging.local
-wellspring-backend/.env.*.local
-wellspring-frontend/.env.*.local
-
-# Database backups
-*.sql
-*.sql.gz
-*.dump
-
-# Node modules size
-node_modules.tgz
-
-# Certificates
-*.cert
-*.crt
-*.csr
-
-# Task/TODO files
-TODO.md
-NOTES.md
-.todos/
-
-# Compiled Python
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Jetbrains
-*.xml
-.idea
-
-# Yarn Berry
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
+# Build output (if this ever gets a build step added)
+dist/
+build/

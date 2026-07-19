@@ -15,7 +15,7 @@ async function runNudgeDetection() {
   for (const user of users) {
     try {
       const latestInsight = await Insight.findOne({ userId: user._id }).sort({ periodStart: -1 });
-      if (!latestInsight || !latestInsight.themes || !latestInsight.themes.length) continue;
+      if (!latestInsight || !latestInsight.themes.length) continue;
 
       const recentEntries = await JournalEntry.find({ userId: user._id }).sort({ createdAt: -1 }).limit(6);
       if (recentEntries.length < 6) continue;

@@ -14,7 +14,7 @@
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
-const DIMENSIONS = Number(process.env.EMBEDDING_DIMENSIONS || 3072);
+const DIMENSIONS = Number(process.env.EMBEDDING_DIMENSIONS || 768);
 
 const INDEXES = [
   {
@@ -46,24 +46,35 @@ async function main() {
         console.log(`  (created empty collection: ${collection})`);
       }
 
-      await db.collection(collection).createSearchIndex({
-        name,
-        type: 'vectorSearch',
-        definition: {
-          fields: [
-            { type: 'vector', path: 'embedding', numDimensions: DIMENSIONS, similarity: 'cosine' },
-            { type: 'filter', path: 'userId' },
-          ],
-        },
-      });
-      console.log(`✓ created ${name} on ${collection}`);
+      const definition = {
+        fields: [
+          { type: 'vector', path: 'embedding', numDimensions: DIMENSIONS, similarity: 'cosine' },
+          { type: 'filter', path: 'userId' },
+        ],
+      };
+
+      try {
+        await db.collection(collection).createSearchIndex({ name, type: 'vectorSearch', definition });
+        console.log(`✓ created ${name} on ${collection}`);
+      } catch (err) {
+        // Switching embedding providers (different dimension count) after
+        // already running this once used to just fail here with "already
+        // defined" — update the existing index in place instead of
+        // requiring a manual delete in the Atlas UI first.
+        if (/already defined|already exists/i.test(err.message)) {
+          await db.collection(collection).updateSearchIndex(name, definition);
+          console.log(`✓ updated existing ${name} on ${collection} (new definition — e.g. dimension count changed)`);
+        } else {
+          throw err;
+        }
+      }
     } catch (err) {
       console.error(`✗ failed to create ${name} on ${collection}:`, err.message);
     }
   }
 
-  console.log('\nIndexes build in the background on Atlas — check status in the Atlas UI ' +
-    '(Search tab) before running queries against them; they are not immediately queryable.');
+  console.log('\nIndexes build (or rebuild, if updated) in the background on Atlas — check status ' +
+    'in the Atlas UI (Search tab) before running queries against them; they are not immediately queryable.');
 
   await client.close();
 }

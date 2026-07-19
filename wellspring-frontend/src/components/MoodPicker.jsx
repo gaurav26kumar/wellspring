@@ -23,6 +23,7 @@ export function MoodPicker({ value, onChange, onCommit, locked = false }) {
 
   function handlePointerDown(e) {
     if (locked) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
     setDragging(true);
     setFromClientX(e.clientX);
   }

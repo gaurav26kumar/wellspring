@@ -82,3 +82,60 @@ username/password, and API-key-shaped strings for Gemini/xAI) committed as
 "example" values. If those are real, rotate them — an `.env.example`
 committed to a repo (or a zip you share) is not a safe place for live
 secrets, example or not.
+
+## 4. `retrievalFailed` was computed and passed, then silently dropped
+
+`chat.routes.js` already tracked whether the Atlas `$vectorSearch` retrieval
+step failed for a given message (`retrievalFailed`) and passed it into
+`runReflectionAgent(...)`. But `reflectionAgent.js`'s function signature only
+destructured `{ message, memories, sessionId }` — the flag was thrown away
+before it ever reached `formatMemories()`. Net effect: on a retrieval failure,
+the model's system prompt said "No relevant past entries or messages were
+retrieved for this message" — worded identically to the case where the person
+genuinely has no matching history — so a degraded turn could read to the model
+(and via its reply, to the person) as "I checked your memories and there's
+nothing there," which isn't true; retrieval was never actually run.
+
+Fix: `runReflectionAgent` now accepts `retrievalFailed` and `formatMemories()`
+returns a distinct message for that case, explicit that this is an infra
+issue and to proceed without implying the memories were checked.
+
+## 5. Missing `wellspring-backend/.env.example`
+
+Both READMEs instruct `cp .env.example .env`, but only the frontend actually
+shipped one — the backend's was missing entirely from this upload (most
+likely stripped after the real-credential issue in item 3 above, without a
+clean placeholder being committed back). Anyone following the README setup
+steps for the backend would hit a `cp: cannot stat '.env.example'` dead end
+with no indication of which environment variables to set. Added a
+placeholder-only `wellspring-backend/.env.example` covering every variable
+the backend code actually reads (`MONGODB_URI`, `JWT_SECRET`,
+`GEMINI_API_KEY`, `JWT_EXPIRES_IN`, `FRONTEND_URL`, `PORT`,
+`EMBEDDING_DIMENSIONS`, `EMBEDDING_MODEL`, `XAI_API_KEY`, `ANTHROPIC_API_KEY`,
+`OPENAI_API_KEY`, `ADMIN_ALERT_EMAIL`), with short notes on which are
+required.
+
+## 6. Mood slider could get stuck mid-drag
+
+`MoodPicker.jsx` handled `pointerdown` on the track but `pointermove` /
+`pointerup` on its parent, with no `setPointerCapture`. Without capture,
+pointer events only fire while the cursor is literally over the listening
+element — a fast drag that crossed outside the ~34px-tall track (easy to do)
+would stop updating the slider and never fire the `pointerup` that ends the
+drag, leaving `dragging` stuck `true` until the next click anywhere. Fixed by
+capturing the pointer on `pointerdown` so the element keeps receiving
+move/up events for that pointer regardless of where it travels.
+
+## 7. `animate-fade-in` did nothing
+
+`LandingPage.jsx`'s intro badge used `className="... animate-fade-in"`, but
+no such utility existed — it's not a built-in Tailwind class and nothing in
+`tailwind.config.js` defined it, so Tailwind silently dropped it and the
+badge just appeared with no animation. Added a `fadeIn` keyframe and
+`fade-in` animation to `tailwind.config.js` so the intended entrance
+animation actually renders.
+
+## Also fixed in passing
+
+- Removed a dead, no-op variable (`showingEntry`) in `JournalPage.jsx` that
+  was assigned but never read anywhere in the component.

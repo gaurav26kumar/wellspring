@@ -80,38 +80,6 @@ async function logSafetyFlag({ userId, messageId, severity, reason }) {
 }
 
 /**
- * Notify admin of high-risk safety flags
- * This is a placeholder implementation - integrate with your alert system
- * (Slack, email, PagerDuty, etc.)
- */
-async function notifyAdminOfHighRiskFlag({ userId, messageId, flagRecord }) {
-  try {
-    // Placeholder: Log to console (replace with actual notification service)
-    console.warn('[safetyAgent] HIGH-RISK FLAG DETECTED:', {
-      userId,
-      messageId,
-      flagRecord,
-      timestamp: new Date().toISOString(),
-    });
-
-    // TODO: Integrate with actual alert system
-    // Example implementations:
-    // - Send to Slack: await sendSlackAlert(...)
-    // - Send email: await sendEmailAlert(...)
-    // - Log to monitoring service: await logToSentry(...)
-    // - Send webhook: await sendWebhook(...)
-
-    // For now, just ensure it's logged prominently
-    if (process.env.ADMIN_ALERT_EMAIL) {
-      console.warn(`[safetyAgent] Should send alert email to: ${process.env.ADMIN_ALERT_EMAIL}`);
-    }
-  } catch (err) {
-    console.error('[safetyAgent] failed to notify admin', err.message);
-    // Don't throw - notification failure should not block the flag from being logged
-  }
-}
-
-/**
  * Fixed, pre-written response. The general-purpose LLM never improvises on
  * this path — this string is the entire response, every time.
  * Numbers are India-specific; swap for your target region.
@@ -128,9 +96,4 @@ function getFixedSafetyResponse() {
   );
 }
 
-module.exports = { 
-  checkSafety, 
-  logSafetyFlag, 
-  getFixedSafetyResponse,
-  notifyAdminOfHighRiskFlag 
-};
+module.exports = { checkSafety, logSafetyFlag, getFixedSafetyResponse };

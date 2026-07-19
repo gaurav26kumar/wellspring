@@ -7,7 +7,7 @@ Express + MongoDB (Atlas Vector Search) implementation of the architecture in
 
 ```bash
 npm install
-cp .env.example .env   # fill in MONGODB_URI, JWT_SECRET, and GEMINI_API_KEY (required — also powers embeddings)
+cp .env.example .env   # fill in MONGODB_URI, JWT_SECRET, and GROQ_API_KEY (required — also powers embeddings)
 npm run create-vector-indexes   # one-time, requires an Atlas cluster
 npm run dev
 ```
@@ -42,7 +42,7 @@ src/
 | SQLAlchemy + Alembic | Mongoose, schemaless | No migration tool needed; schema validation lives in the Mongoose models themselves |
 | APScheduler | `node-cron` | Fine for one instance — see the comment in `workers/scheduler.js` about Agenda if you scale to more |
 | SSE via FastAPI | SSE via raw Express `res.write` | Same wire format, `chat.routes.js` |
-| — | Gemini for embeddings, Gemini/Grok/Anthropic/OpenAI for chat (in that order) | Gemini has a genuine no-credit-card free tier and is the only one of the four with a public embeddings endpoint — see `services/embeddings.js` and `services/llmProvider.js` |
+| — | Groq for both embeddings and chat (Anthropic/OpenAI available as optional fallbacks) | Groq has a genuine no-credit-card free tier and is OpenAI-SDK-compatible for both endpoints — see `services/embeddings.js` and `services/llmProvider.js`. Groq retires models often; both model names are configurable via `.env` rather than hardcoded |
 
 ## The one thing not to skip
 

@@ -1,27 +1,21 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
-const MODEL = process.env.EMBEDDING_MODEL || 'gemini-embedding-001';
+const OpenAI = require('openai');
 
 /**
- * Returns a plain number[] embedding, via Gemini.
- *
- * Switched from OpenAI: Gemini has a genuine free tier for this model (no
- * credit card required — see ai.google.dev/gemini-api/docs/pricing).
- * xAI/Grok does NOT expose a public embeddings endpoint as of this writing
- * (confirmed via their own SDK integration docs), so it isn't an option
- * here even though it is for chat generation in llmProvider.js.
- *
- * gemini-embedding-001 returns 3072-dimensional vectors by default. Make
- * sure EMBEDDING_DIMENSIONS in .env and the vector index definition in
- * scripts/createVectorIndex.js both say 3072 — a mismatch there won't
- * throw an obvious error, queries will just silently return nothing.
+ * Groq's API is OpenAI-SDK-compatible — same client as chat, just a
+ * different base URL. nomic-embed-text-v1_5 (note the underscore — that's
+ * Groq's exact model ID, different from Nomic's own hosted API which uses
+ * a period) outputs 768-dimensional vectors natively. EMBEDDING_DIMENSIONS
+ * in .env and scripts/createVectorIndex.js must both say 768 to match.
  */
+const groq = process.env.GROQ_API_KEY
+  ? new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1' })
+  : null;
+const MODEL = process.env.EMBEDDING_MODEL || 'nomic-embed-text-v1_5';
+
 async function embedText(text) {
-  if (!genAI) throw new Error('GEMINI_API_KEY not configured for embeddings');
-  const model = genAI.getGenerativeModel({ model: MODEL });
-  const result = await model.embedContent(text);
-  return result.embedding.values;
+  if (!groq) throw new Error('GROQ_API_KEY not configured for embeddings');
+  const res = await groq.embeddings.create({ model: MODEL, input: text });
+  return res.data[0].embedding;
 }
 
 module.exports = { embedText };

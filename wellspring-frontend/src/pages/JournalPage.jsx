@@ -46,7 +46,6 @@ export function JournalPage() {
     }
   }
 
-  const showingEntry = viewing || (content || mood !== 0.5 ? null : null);
   const displayMoodValue = viewing ? scoreToValue(viewing.moodScore) : mood;
 
   return (

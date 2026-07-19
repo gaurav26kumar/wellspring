@@ -1,15 +1,15 @@
 const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
-const { asyncHandler } = require('../../middleware/asyncHandler');
 const Nudge = require('../../models/Nudge');
 
 const router = express.Router();
 
-router.get('/', requireAuth, asyncHandler(async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   const nudges = await Nudge.find({ userId: req.user.id, status: { $in: ['pending', 'sent'] } }).sort({ createdAt: -1 });
-  res.json(nudges);}));
+  res.json(nudges);
+});
 
-router.patch('/:id', requireAuth, asyncHandler(async (req, res) => {
+router.patch('/:id', requireAuth, async (req, res) => {
   const { status } = req.body; // 'sent' | 'dismissed'
   if (!['sent', 'dismissed'].includes(status)) return res.status(400).json({ error: 'invalid status' });
 
@@ -19,6 +19,7 @@ router.patch('/:id', requireAuth, asyncHandler(async (req, res) => {
     { new: true }
   );
   if (!nudge) return res.status(404).json({ error: 'Nudge not found' });
-  res.json(nudge);}));
+  res.json(nudge);
+});
 
 module.exports = router;
