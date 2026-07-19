@@ -3,13 +3,13 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppShell } from './components/AppShell';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { JournalPage } from './pages/JournalPage';
 import { ChatPage } from './pages/ChatPage';
 import { GrowthPage } from './pages/GrowthPage';
 import { CommunityPage } from './pages/CommunityPage';
-import { LandingPage } from './pages/LandingPage';
 
 function Protected({ children }) {
   return (
@@ -39,4 +39,3 @@ export default function App() {
     </ThemeProvider>
   );
 }
-
