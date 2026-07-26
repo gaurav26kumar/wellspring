@@ -12,7 +12,34 @@ const insightsRoutes = require('./api/v1/insights.routes');
 const nudgesRoutes = require('./api/v1/nudges.routes');
 
 const app = express();
-app.use(cors());
+
+// Parse CORS_ORIGIN environment variable into an array or fallback to '*'
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+  : '*';
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. cURL, Postman, or mobile/server calls)
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins === '*' ||
+        allowedOrigins.includes('*') ||
+        allowedOrigins.includes(origin)
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('CORS policy error: Origin not allowed'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
 app.use(cookieParser());
 app.use(express.json());
 
