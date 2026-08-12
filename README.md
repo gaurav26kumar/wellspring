@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="./assets/wellspring-banner.jpeg" alt="Wellspring project banner" width="100%" />
+</p>
+
+
 <div align="center">
   <h1>Wellspring</h1>
   <p>AI-powered reflective journaling and personal growth platform</p>
