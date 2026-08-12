@@ -3,10 +3,7 @@
 </p>
 
 
-<div align="center">
-  <h1>Wellspring</h1>
-  <p>AI-powered reflective journaling and personal growth platform</p>
-</div>
+
 
 Wellspring is a full-stack wellness application that combines journaling, conversational reflection, semantic memory retrieval, safety classification, and growth insights in a single system.
 
