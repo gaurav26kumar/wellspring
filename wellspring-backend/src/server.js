@@ -14,9 +14,10 @@ const nudgesRoutes = require('./api/v1/nudges.routes');
 const app = express();
 
 // Parse CORS_ORIGIN environment variable into an array or fallback to '*'
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
-  : '*';
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
 app.use(
   cors({
@@ -24,15 +25,14 @@ app.use(
       // Allow requests with no origin (e.g. cURL, Postman, or mobile/server calls)
       if (!origin) return callback(null, true);
 
-      if (
-        allowedOrigins === '*' ||
-        allowedOrigins.includes('*') ||
-        allowedOrigins.includes(origin)
-      ) {
+      const normalizedOrigin = origin.trim().replace(/\/$/, '');
+
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(normalizedOrigin)) {
         return callback(null, true);
       }
 
-      return callback(new Error('CORS policy error: Origin not allowed'));
+      console.warn(`[CORS] blocked origin: ${normalizedOrigin}`);
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

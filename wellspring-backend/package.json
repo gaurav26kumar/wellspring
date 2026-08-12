@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "create-vector-indexes": "node scripts/createVectorIndex.js"
+    "create-vector-indexes": "node scripts/createVectorIndex.js",
+    "reembed-all": "node scripts/reembedAll.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
